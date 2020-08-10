@@ -1,1 +1,2 @@
 学习笔记
+request和response流程：调用函数创建request实例，request调用Request类的send方法，使用net.createConnection发送请求，后台接受后返回' Hello World\n',使用ResponseParser实例的receive方式来解析headers和body
