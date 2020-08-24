@@ -362,9 +362,9 @@ function selfClosingStartTag(c){
 
 module.exports.parseHTML = function parserHTML(html){
     let state = data;
-    for(let c of html) {
+    for(let c of html) { // 进行状态机解析
         state = state(c)
     }
     state = state(EOF)
-    return stack[0]
+    return stack[0] // 导出dom对象{type: 'document', children:[...]}
 }
