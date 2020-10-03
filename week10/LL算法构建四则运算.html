@@ -1,0 +1,151 @@
+<script>
+    // 1 
+    var regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g
+    //              数字        tab     换行符     *    /    +   -
+    var dictionary = ['Number', 'Whitespace', 'LineTerminator', '*', '/', '+', '-']
+
+    
+    // 2 配置字符串
+    // 使用正则表达式和匹配关系去匹配词法
+    function* tokenize(source) {
+        var result = null;
+        var lastIndex = 0;
+        while(true) {
+            lastIndex = regexp.lastIndex;
+            result = regexp.exec(source)
+            if(!result) 
+                break; // 匹配到最后，没有字符串可以匹配，break结束
+            if(regexp.lastIndex - lastIndex > result[0].length) 
+                break; // 遇到识别不了的字符串时 
+
+            let token = {
+                type: null,
+                value: null
+            }
+
+            // 计算每次匹配的类型
+            for(var i = 1; i <= dictionary.length; i++) {
+                if(result[i]) 
+                    token.type = dictionary[i - 1]
+            }
+            token.value = result[0]
+            yield token;
+        }
+        yield {
+            type: 'EOF'
+        }
+    }
+
+    let source = [];
+
+    // 3 把匹配到的数组数组中的 数字和运算符 放入到数组中
+    for(let token of tokenize('19 + 25 - 2')) {
+        if(token.type != "Whitespace" && token.type != "LineTerminator")
+            source.push(token)
+    }
+
+    // 4.3 
+    function Expression(tokens) {
+        if(source[0].type === 'AdditiveExpression' && source[1] && source[1].type === 'EOF') {
+            let node = {
+                type: 'Expression',
+                children: [source.shift(), source.shift()]
+            }
+            source.unshift(source);
+            return node;
+        }
+        AdditiveExpression(source)
+        return Expression(source)
+    }
+
+    // 4.2 加法递归
+    // 加法由两边的乘法组成
+    function AdditiveExpression(source) {
+        if(source[0].type === 'MultiplicativeExpression') {
+            let node = {
+                type: "AdditiveExpression",
+                children: [source[0]]
+            }
+            source[0] = node;
+            return AdditiveExpression(source)
+        }
+        if(source[0].type === 'AdditiveExpression' && source[1] && source[1].type === '+') {
+            let node = {
+                type: "AdditiveExpression",
+                operator: '+',
+                children: []
+            }
+            // 把source的前三项替换为新的一项
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            MultiplicativeExpression(source) // ***对遇到的非终结符，先执行一下MultiplicativeExpression
+            node.children.push(source.shift());
+            source.unshift(node);
+            return AdditiveExpression(source)
+        }
+        if(source[0].type === 'AdditiveExpression' && source[1] && source[1].type === '-') {
+            let node = {
+                type: "AdditiveExpression",
+                operator: '-',
+                children: []
+            }
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            MultiplicativeExpression(source)
+            node.children.push(source.shift());
+            source.unshift(node);
+            return AdditiveExpression(source)
+        }
+        // 递归结束条件（解析完所有的路径，没有加减号可以格式化）
+        if(source[0].type === 'AdditiveExpression') {
+            return source[0]
+        }
+        // 如果进入的是number先执行这个
+        MultiplicativeExpression(source);
+        return AdditiveExpression(source);
+    }
+
+    // 4.1 乘法递归（在递归中不断对source做操作，最后把处理后的数组依次抛出）
+    // 对source进行处理，返回第一个元素
+    function MultiplicativeExpression(source) {
+        if(source[0].type === 'Number') {
+            let node = {
+                type: "MultiplicativeExpression",
+                children: [source[0]]
+            }
+            source[0] = node;
+            return MultiplicativeExpression(source)
+        }
+        if(source[0].type === 'MultiplicativeExpression' && source[1] && source[1].type === '*') {
+            let node = {
+                type: "MultiplicativeExpression",
+                operator: '*',
+                children: []
+            }
+            // 把source的前三项替换为新的一项
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            source.unshift(node);
+            return MultiplicativeExpression(source)
+        }
+        if(source[0].type === 'MultiplicativeExpression' && source[1] && source[1].type === '/') {
+            let node = {
+                type: "MultiplicativeExpression",
+                operator: '/',
+                children: []
+            }
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            node.children.push(source.shift());
+            source.unshift(node);
+            return MultiplicativeExpression(source)
+        }
+        // 递归结束条件（解析完所有的路径，没有加减号可以格式化）
+        if(source[0].type === 'MultiplicativeExpression') {
+            return source[0]
+        }
+    }
+
+    console.log('打印四则运算',Expression(source))
+</script>

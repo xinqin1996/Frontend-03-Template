@@ -1,0 +1,183 @@
+<!-- 一维数组 -->
+<style>
+    #board {
+        width: 350px;
+    }
+    .cell {
+        width: 100px;
+        height: 100px;
+        background-color: green;
+        display: inline-block;
+        border: 1px solid white;
+        vertical-align: middle;
+        line-height: 100px;
+        font-size: 70px;
+        text-align: center;
+        /* color: red; */
+    }
+</style>
+
+<div id="board"></div>
+
+<script>
+    // *棋盘
+    let pattern = [
+        0 ,0, 0,
+        0 ,0, 0,
+        0 ,0, 0
+    ]
+    
+    // *旗手
+    let color = 1;
+
+    // 1 棋盘显示事件
+    function show() {
+        let board = document.getElementById('board');
+
+        board.innerHTML = '';
+
+        for(let i = 0; i < 3; i++) {
+            for(let j = 0; j < 3; j++) {
+                let cell = document.createElement("div");
+                cell.classList.add('cell');
+                cell.innerText = 
+                    pattern[i * 3 + j] == 2 ? "×" :
+                    pattern[i * 3 + j] == 1 ? "○" : "";
+                cell.addEventListener('click', () => {userMove(j, i)})
+                board.appendChild(cell)
+            }
+            board.appendChild(document.createElement('br'))
+        }
+    }
+
+    // 2 落子
+    function userMove(x, y) {
+        pattern[y * 3 + x] = color;
+        // 在落子后判断哪一方会胜利
+        if(check(pattern, color)) {
+            alert(color == 2 ? "X is winner " : "O is winner")
+        }
+        color = 3 - color; // 切换棋手
+        show();
+        setTimeout(() => {
+           computerMove(); 
+        }, 1000)
+        // AI 判断哪一方会胜利
+        // if(willWin(pattern, color)) {
+        //     console.log(color == 2 ? "X is winner " : "O is winner")
+        // }
+    }
+
+    // 2.2 在玩家落子后，电脑计算落子的位置
+    function computerMove() {
+        let choice = bestChoice(pattern, color);
+        if(choice.point) {
+            pattern[choice.point[1] * 3 + choice.point[0]] = color;
+        }
+        // 电脑落子后判断是否胜利
+        if(check(pattern, color)) {
+            alert(color == 2 ? "X is winner " : "O is winner")
+        }
+        color = 3 - color;
+        show()
+    }
+
+    // 3 判断当前落子是否胜利
+    function check(pattern, color) {
+        for(let i = 0; i < 3; i++) {
+            let win = true;
+            for(let j = 0; j < 3; j++) {
+                if(pattern[i * 3 + j] !== color) {
+                    win = false;
+                }
+            }
+            if(win) return true;
+        } 
+        for(let i = 0; i < 3; i++) {
+            let win = true;
+            for(let j = 0; j < 3; j++) {
+                if(pattern[j * 3 + i] !== color) {
+                    win = false;
+                }
+            }
+            if(win) return true;
+        }
+        {
+            let win = true;
+            for(let j = 0; j < 3; j++) {
+                if(pattern[j * 3 + 2 - j] !== color) {
+                    win = false;
+                }
+            }
+            if(win) return true;
+        }
+        {
+            let win = true;
+            for(let j = 0; j < 3; j++) {
+                if(pattern[j * 3 + j] !== color) {
+                    win = false;
+                }
+            }
+            if(win) return true;
+        }
+        return false;
+    }
+
+    // 4 克隆棋盘
+    function clone(pattern) {
+        return Object.create(pattern)
+    }
+
+    // 5 AI 电脑落子 判断哪一方会胜利 （遍历所有位置，查看可以赢得点）
+    function willWin(pattern, color) {
+        for(let i = 0; i < 3; i++) {
+            for(let j = 0; j < 3; j++) {
+                if(pattern[i * 3 + j]) {
+                    continue;
+                }
+                let tmp = clone(pattern);
+                tmp[i * 3 + j] = color;
+                if(check(tmp, color)) {
+                    return [j, i]
+                }
+            }
+        }
+        return null;
+    }
+
+    // 6 电脑计算：最好的落子位置
+    function bestChoice(pattern, color) {
+        let p;
+        if(p = willWin(pattern, color)) {
+            return {
+                point: p,
+                result: 1
+            }
+        }
+        let result = -2;
+        let point = null;
+        outer:for(let i = 0; i < 3; i++) {
+            for(let j = 0; j < 3; j++) {
+                if(pattern[i * 3 + j]) {
+                    continue;
+                }
+                let tmp = clone(pattern);
+                tmp[i * 3 + j] = color;
+                let r = bestChoice(tmp, 3 - color).result
+                if(-r > result) { // [0, 0]
+                    result = -r;
+                    point = [j, i]
+                }
+                if(result == 1) { // 胜负减枝
+                    break outer;
+                }
+            }
+        }
+        return {
+            point: point,
+            result: point ? result : 0
+        }
+    }
+    show(pattern)
+    console.log(bestChoice(pattern, color))
+</script>

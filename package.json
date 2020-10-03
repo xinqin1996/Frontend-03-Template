@@ -14,6 +14,7 @@
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
+    "anywhere": "^1.5.0",
     "css": "^3.0.0"
   },
   "repository": {
