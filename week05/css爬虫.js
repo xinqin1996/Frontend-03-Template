@@ -431,3 +431,26 @@ let parserText = [{
     "name": "List of suggested extensions to CSS",
     "url": "https://www.w3.org/TR/1998/NOTE-CSS-potential-19981210"
 }]
+
+let iframe = document.createElement("iframe");
+document.body.innerHTML = '';
+document.body.appendChild(iframe);
+
+// 为iframe元素添加loader事件，当加载成功才resolve
+function happen(element, event) {
+    return new Promise((resolve) => {
+        let handler = () => {
+            resolve();
+            element.removeEventListener(event, handler)
+        }
+        element.addEventListener(event, handler)
+    })
+}
+
+void async function() {
+    for(let parser of parserText) {
+        iframe.src = parser.url;
+        console.log(parser.name);
+        await happen(iframe, 'load')
+    }
+}()
