@@ -1,0 +1,65 @@
+<script>
+    // https://mp.weixin.qq.com/s/r9pbkMyFyMAvmkf4QnL-1g
+    class KMP {
+        constructor() {
+            this.dp = [];
+            this.pat = '';
+        }
+
+        // 构建KMP子串 dp数组
+        KMP(pat) {
+            this.pat = pat;
+            let M = pat.length;
+            // 初始化dp数组
+            let dp = Array.from(
+                { length: M },
+                () => { return new Array(256).fill(0) }
+            ); 
+            // base case
+            dp[0][pat.charCodeAt(0)] = 1;
+            // 影子状态 X 初始为 0
+            let X = 0;
+            // 当前状态 j 从 1 开始
+            for(let j = 1; j < M; j++) {
+                for(let c = 0; c < 256; c++) {
+                    if(pat.charCodeAt(j) == c) { // 获取当前pat串的Code值
+                        dp[j][c] = j + 1;
+                    } else {
+                        dp[j][c] = dp[X][c]
+                    }
+                }
+                // 更新X的状态(当前的影子字符和正在匹配的一样时，更新状态)
+                // 在j指针往前移动的时候，加入j位置的字符和X位置的字符一样
+                // 影子前移，匹配不到则X = 0；
+                X = dp[X][pat.charCodeAt(j)]
+            }
+            this.dp = dp;
+        }
+
+        // 匹配文本串tet 
+        search(txt) {
+            let M = this.pat.length;
+            let N = txt.length;
+            
+            let j = 0;
+            for(let i = 0; i < N; i++) {
+                // 计算 pat 的下一个状态
+                j = this.dp[j][txt.charCodeAt(i)]
+                // 到达终止态，返回结果
+                if(j == M) {
+                    return i - M + 1;
+                }
+            }
+            // 没到达终止态，匹配失败
+            return  -1;
+        }
+    }
+
+    let kmp = new KMP();
+    kmp.KMP('ababc');
+    console.log(kmp);
+    console.log(
+        kmp.search('ababgababc')
+    );
+
+</script>
