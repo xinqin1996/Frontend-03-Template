@@ -15,16 +15,16 @@
         insert(e) {
             this.N++;
             this.pq[this.N] = e; // 在N位置插入元素；
-            this.#swin(N) // 上浮到对应位置
+            this.#swim(this.N) // 上浮到对应位置
         }
 
         /** 删除并返回当前队列中的最大元素 */
         /** 堆顶元素 A 和堆底最后的元素 B 对调，然后删除 A，最后让 B 下沉到正确位置 */
         /** 时间复杂度O(logN) */ 
-        #delMax(){
-            let max = pq[1];
+        delMax(){
+            let max = this.pq[1];
             this.#exch(1, this.N); // 交换首—尾
-            this.pq[N] = null;
+            this.pq[this.N] = null;
             this.N--;
             this.#sink(1); // 下沉首位
             return max;
@@ -33,10 +33,10 @@
         /** 上浮第k个元素，以维护最大堆性质 */
         #swim(k) {
             // 浮到堆顶，不在上浮
-            while(k > 1 && this.#less(this.parent, k)) {
+            while(k > 1 && this.#less(this.parent(k), k)) {
                 // 交换两个元素，k上浮
-                this.#exch(parent(k), k); 
-                k = parent(k)
+                this.#exch(this.parent(k), k); 
+                k = this.parent(k)
             }
         }
 
@@ -46,7 +46,7 @@
             while(this.left(k) <= this.N ) {
                 // older 为left和right中的最大值
                 let older = this.left(k);
-                if(this.right(k) <= N && less(older, right(k))) {
+                if(this.right(k) <= this.N && this.#less(older, this.right(k))) {
                     older = this.right(k);
                 }
                 // 如果k比孩子都大
@@ -59,13 +59,13 @@
         /** 交换数组的两个元素 */
         #exch(i, j) {
             let temp = this.pq[i];
-            this.pq[i] = pq[j];
+            this.pq[i] = this.pq[j];
             this.pq[j] = temp;
         }
 
         /** 判断pq[i] 是否比pq[j] 小 */
         #less(i, j) {
-           return pq[i] - pq[j] < 0; 
+           return this.pq[i] - this.pq[j] < 0; 
         }
 
         /** left,right,parent */
@@ -80,14 +80,27 @@
         }
     }
 
-    // var PQ = new MaxPQ();
-    // PQ.insert(2)
-    // PQ.insert(12)
-    // PQ.insert(99)
-    // PQ.insert(78)
-    // PQ.insert(745)
+    // 创建实例
+    var PQ = new MaxPQ();
+    PQ.insert(2)
+    PQ.insert(12)
+    PQ.insert(99)
+    PQ.insert(78)
+    PQ.insert(745)
+    PQ.insert(60)
+    PQ.insert(30)
+    
+    console.log(PQ.pq)
 
-
-
-
+    // 取出并打印最大值
+    for(let i = 0; i < 7; i++) {
+        console.log(PQ.delMax())
+    }
+    // 745
+    // 99
+    // 78
+    // 60
+    // 30
+    // 12
+    // 2
 </script>

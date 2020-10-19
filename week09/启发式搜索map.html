@@ -49,12 +49,13 @@
                 }
             }
 
-            // 把最后一个元素前提，再把替换的元素删除
+            // 把最后一个元素前提，覆盖掉最小值
+            // 再把最后一位删除
             // O(1)
             this.data[minIndex] = this.data[this.data.length - 1];
             this.data.pop();
 
-            return min;
+            return min; // 返回最小值
         }
         give(v) {
             return this.data.push(v)
