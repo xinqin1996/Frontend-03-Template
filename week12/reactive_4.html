@@ -9,12 +9,18 @@
 </html>
 
 <script>
-    // 运行effect，清空usedReactivities
+    // 运行effect，清空usedReactivities，下次运行effect，会在原有的基础上新增handler
     // handler()  => ro.a => 在usedReactivities进行注册对象[ro, a]
     // 通过usedReactivities， 来注册handlers的[handler]
-    // ro.a时，去handlers中寻找注册的[handler], handlers只有在运行effect才会注册
+    // ro.a = val 时，去handlers中寻找注册的[handler], handlers只有在运行effect才会注册
     // 同时通过reactivities防止二次注册
 
+    // let ro = reactive({r:100, g:100, b:100});  先创建proxy（usedReactivities）
+    // effect(() => { ... = obj.a })              usedReactivities：把事件注册 和 {r:100, g:100, b:100} 联系在一起
+    //                                            obj.a 只为 obj.a 注册事件
+    // usedReactivities                           由 obj.a 触发get生成
+    // effect(() => {  })                         重新生成usedReactivities，在原有handlers的基础上添加新的handler
+    // obj.a = val                                触发set,遍历执行handlers里对应代理对象的[handler]
 
     // 防止一个对象被多次代理
     let handlers = new Map(); // Map - object - object - [handler]
@@ -25,7 +31,7 @@
 
     function effect(handler) {
         usedReactivities = [];
-        handler();
+        handler();  // 这一步会重新生成 usedReactivities
         for(let usedReactivity of usedReactivities) {
             let [obj, prop] = usedReactivity;
             if(!handlers.get(obj)) {
@@ -68,17 +74,26 @@
         return proxy;
     }
 
-    let ro = reactive({r:100, g:100, b:100});
+    let po = reactive({r:100, g:100, b:100});
 
+    // po.r 直接改变input的值
     effect(() => {
-        
+        document.getElementById("r").value = po.r
+        console.log('11111')
     })
     effect(() => {
-        
+        document.getElementById("g").value = po.g
     })
     effect(() => {
-        
+        document.getElementById("b").value = po.b
     })
 
+    // 元素监听，input的value改变，改变po的值
+    document.getElementById("r").addEventListener("input", event => { po.r = event.target.value ; console.log(222)})
+    document.getElementById("g").addEventListener("input", event => { po.g = event.target.value })
+    document.getElementById("b").addEventListener("input", event => { po.b = event.target.value })
 
+    effect(() => {
+        document.getElementById("color").style.backgroundColor = `rgb(${po.r}, ${po.g}, ${po.b})`
+    })
 </script>
