@@ -1,20 +1,36 @@
 <script>
+    // 最基础的reactive
+    let handlers = [];
+    
+    function effect(handler) {
+        handlers.push(handler)
+    }
+
     let object = {
         a: 1,
         b: 2
     }
 
-    let proxy = new Proxy(object, {
-        get(obj, prop) {
-            return obj[prop]
-        },
-        set(obj, proxy, val) {
-            obj[proxy] = val;
-            return  obj[proxy]
-        },
-        getPrototypeOf() {
-            console.log(arguments)
-            return {}
-        }
+    let ro = reactive(object)
+
+    effect(() => {
+        console.log(ro.a)
     })
+
+
+    function reactive(object) {
+        return new Proxy(object, {
+            get(obj, prop) {
+                return obj[prop]
+            },
+            set(obj, proxy, val) {
+                for(let handler of handlers) { // 在数据变化前打印数据
+                    handler()
+                }
+                return obj[proxy] = val;
+            }
+        })
+    }
+
+    ro.a = 11
 </script>

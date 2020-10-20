@@ -1,0 +1,75 @@
+<script>
+    // 运行effect，清空usedReactivities
+    // handler()  => ro.a => 在usedReactivities进行注册对象[ro, a]
+    // 通过usedReactivities， 来注册handlers的[handler]
+    // ro.a时，去handlers中寻找注册的[handler], handlers只有在运行effect才会注册
+    // 同时通过reactivities防止二次注册
+
+
+    // 防止一个对象被多次代理
+    let handlers = new Map(); // Map - object - object - [handler]
+
+    let reactivities = new Map(); // 保存了 [已经被代理的object,和被代理后产生的proxy],防止二次代理
+
+    let usedReactivities = []; // [[object, object],]
+
+    function effect(handler) {
+        usedReactivities = [];
+        handler();
+        for(let usedReactivity of usedReactivities) {
+            let [obj, prop] = usedReactivity;
+            if(!handlers.get(obj)) {
+                handlers.set(obj, new Map())
+            }
+            if(!handlers.get(obj).get(prop)) {
+                handlers.get(obj).set(prop, [])
+            }
+            handlers.get(obj).get(prop).push(handler);
+        }
+    }
+
+
+    let object = {
+        a: {x: 2},
+        b: 2
+    }
+
+    let ro = reactive(object) // 先创建proxy
+
+    effect(() => { // 再进行事件注册
+        console.log(ro.a.x) // 对ro.a 进行注册
+    })
+
+
+    function reactive(object) {
+        if(reactivities.get(object)) {
+            return reactivities.get(object)
+        }
+        let proxy = new Proxy(object, {
+            get(obj, prop) {
+                usedReactivities.push([obj, prop]) // ro.a 时在usedReactivities进行注册
+                if(typeof obj[prop] === "object") { // 对 对象里面的对象进行代理
+                    return  reactive(obj[prop])
+                }
+                return obj[prop]
+            },
+            set(obj, prop, val) {
+                obj[prop] = val
+                if(handlers.get(obj)) {
+                    if(handlers.get(obj).get(prop)) {
+                        for(let handler of handlers.get(obj).get(prop)) {
+                            handler();
+                        }
+                    }
+                }
+                return obj[prop] ;
+            }
+        })
+
+        reactivities.set(object, proxy);
+        reactivities.set(proxy, proxy);
+        return proxy;
+    }
+
+    // ro.a = 11
+</script>

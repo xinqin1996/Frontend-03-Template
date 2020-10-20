@@ -1,0 +1,56 @@
+<script>
+    // 实现单个对象单个属性的访问
+    let handlers = new Map(); // Map - 对象 - 属性 - [handler]
+
+    let usedReactivities = [];
+
+    function effect(handler) {
+        usedReactivities = [];
+        handler();
+        for(let usedReactivity of usedReactivities) {
+            let [obj, prop] = usedReactivity;
+            if(!handlers.get(obj)) {
+                handlers.set(obj, new Map())
+            }
+            if(!handlers.get(obj).get(prop)) {
+                handlers.get(obj).set(prop, [])
+            }
+            handlers.get(obj).get(prop).push(handler);
+        }
+    }
+
+
+    let object = {
+        a: 1,
+        b: 2
+    }
+
+    let ro = reactive(object)
+
+    effect(() => {
+        console.log(ro.a) // 对ro.a 进行注册
+    })
+
+
+    function reactive(object) {
+        return new Proxy(object, {
+            get(obj, prop) {
+                usedReactivities.push([obj, prop]) // ro.a 时在usedReactivities进行注册
+                return obj[prop]
+            },
+            set(obj, prop, val) {
+                obj[prop] = val
+                if(handlers.get(obj)) {
+                    if(handlers.get(obj).get(prop)) {
+                        for(let handler of handlers.get(obj).get(prop)) {
+                            handler();
+                        }
+                    }
+                }
+                return obj[prop] ;
+            }
+        })
+    }
+
+    // ro.a = 11
+</script>
