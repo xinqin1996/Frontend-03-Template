@@ -1,0 +1,20 @@
+<script>
+    let object = {
+        a: 1,
+        b: 2
+    }
+
+    let proxy = new Proxy(object, {
+        get(obj, prop) {
+            return obj[prop]
+        },
+        set(obj, proxy, val) {
+            obj[proxy] = val;
+            return  obj[proxy]
+        },
+        getPrototypeOf() {
+            console.log(arguments)
+            return {}
+        }
+    })
+</script>
