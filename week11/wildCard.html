@@ -1,0 +1,67 @@
+<script>
+    function find(source, pattern) {
+        // 获取 * 的个数
+        let startCount = 0;
+        for(let i = 0; i < pattern.length; i++) {
+            if(pattern[i] === '*') {
+                startCount++;
+            }
+        }
+        // 严格匹配字符串（处理边缘情况）
+        if(startCount === 0) {
+            for(let i = 0; i < pattern.length; i++) {
+                if(pattern[i] !== source[i] && pattern[i] !== '?') { /** 这里的判断是有问题的 */
+                    return false;
+                }
+            }
+            return true
+        }
+
+        let i = 0; // pattern 的位置
+        let lastIndex = 0; // source 的位置
+
+        // 匹配完第一个 * 前的所有字符
+        for(i = 0; pattern[i] !== "*"; i++) {
+            if(pattern[i] !== source[i] && pattern[i] !== "?") {
+                return false;
+            }
+        }
+
+        // abcd*
+        lastIndex = i;   
+
+        // 匹配startCount - 1个数的 * 号 
+        for(let p = 0; p < startCount - 1; p++) {
+            i++; // 跳过*号 +1
+            let subPattern = "";
+            while(pattern[i] !== "*") { // *abcdefg 获取subPattern的长度
+                subPattern += pattern[i];
+                i++
+            }
+
+            let reg = new RegExp(subPattern.replace(/\?/g, "[\\s\\S]"), "g") // [\\s\\S] => [\s\S]
+            reg.lastIndex = lastIndex;
+
+            console.log(reg.exec(source));
+            lastIndex = reg.lastIndex;  // lastIndex 下次匹配的起始位置
+        } 
+        
+        // 匹配最后一个 *
+        // 从结尾匹配
+        for(let j = 0; 
+            j <= source.length - lastIndex && pattern[pattern.length - j] != "*";
+            j++
+        ) {
+            if(pattern[pattern.length - j] != source[source.length - j]
+                &&    pattern[pattern.length - j] != '?'
+            ) {
+                return false
+            }
+        }
+        return true;
+        
+
+    }
+console.log(find("abccaxab", "ab*ca*ab"))
+
+</script>
