@@ -1,0 +1,92 @@
+<!-- 实现元素在文字中随意移动，不改变元素布局 -->
+<!-- 使用range获取单个文字的每个的位置信息 -->
+<!-- 获取离 (x0, y0) 最近的文字range -->
+<!--初步实现了range来带动dragable移动 -->
+ 
+<html>
+    <div id="container">文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+        文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+        文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+        文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+        文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+        文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+        文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+        文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+        文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+        文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+       爱你</div>
+    <div id="dragable" style="display:inline-block;width:50px;height:50px;background-color:pink"></div>
+
+
+</html>
+
+<script> 
+    // 保存元素每次移动的起始位置
+    let baseX = 0, baseY = 0;
+    // *1
+    // mousedown的时候为元素添加 mousemove事件
+    // mouseup 时 移除 mousemove，mouseup 
+    document.getElementById("dragable").addEventListener("mousedown",  function(event) {
+         // *2 记录mousedown时的位置
+        let startX = event.clientX, startY = event.clientY;
+        
+        let move = event => {
+            console.log(event.clientX, event.clientY);
+            // *3 mousemove是计算元素移动到的位置
+            let x = baseX + event.clientX - startX, y = baseY + event.clientY - startY;
+            // *8 mousemove时，获取和鼠标位置最接近的range, 把dragable元素插入到该range
+            let range = nearest(event.clientX, event.clientY);
+            range.insertNode(document.getElementById("dragable"))
+
+            // *7 transform是脱离了文档流的移动
+            // document.getElementById("dragable").style.transform = `translate(${x}px, ${y}px)`
+        }
+        let end = (event) => {
+            // *4 mouseup时记录下本次移动后元素的位置
+            baseX = baseX + event.clientX - startX;
+            baseY = baseY + event.clientY - startY ;
+            document.removeEventListener("mousemove", move);
+            document.removeEventListener("mouseup", end);
+        }
+        document.addEventListener("mousemove", move)
+        document.addEventListener("mouseup", end)
+    }) 
+
+    let container = document.getElementById("container");
+
+    // *5 使用range获取container元素中所有文字 (单个文字) 的位置信息,push进ranges
+    let ranges = [];
+    for(let i = 0; i < container.childNodes[0].textContent.length; i++) {
+        let range = document.createRange();
+        // 选择节点的位置：一个参照节点，一个节点偏移量
+        range.setStart(container.childNodes[0], i);
+        range.setEnd(container.childNodes[0], i);
+        ranges.push(range)
+    }
+
+    // *6 遍历ranges 获取离 (x0, y0) 最近的文字range
+    function nearest(x0, y0) {
+        let nearest = null;
+        let distance = Infinity;
+        for(let range of ranges) {
+            let rect = range.getClientRects()[0];
+            if(!rect) // 处理边际case, range.getClientRects()[0]可能不存在
+                continue;
+            let {x , y} = rect; // 获取x, y
+            let d = (x - x0) ** 2 + (y - y0) ** 2;
+            if(d < distance) {
+                distance = d;
+                nearest = range;
+            }
+        }
+        return (nearest)
+    }
+
+    // *9 禁止鼠标选中文字
+    document.addEventListener("selectstart", function(event) {
+        console.log('forbid selectstart'); 
+        event.preventDefault();
+    });
+
+
+</script>

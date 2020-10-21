@@ -1,0 +1,25 @@
+<!-- 元素的拖拽事件 -->
+
+<html>
+    <div id="dragable" style="width:100px;height:100px;background-color:pink"></div>
+
+
+</html>
+
+<script> 
+    // *1
+    // mousedown的时候为元素添加 mousemove事件
+    // mouseup 时 移除 mousemove，mouseup 
+    document.getElementById("dragable").addEventListener("mousedown",  () => {
+        let move = event => {
+            console.log(event.clientX, event.clientY);
+        }
+        let end = () => {
+            document.removeEventListener("mousemove", move);
+            document.removeEventListener("mouseup", end);
+        }
+        document.addEventListener("mousemove", move)
+        document.addEventListener("mouseup", end)
+    }) 
+
+</script>
