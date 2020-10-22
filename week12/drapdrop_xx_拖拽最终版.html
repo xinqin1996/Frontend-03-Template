@@ -46,8 +46,8 @@
         }
         let end = (event) => {
             // *4 mouseup时记录下本次移动后元素的位置
-            baseX = baseX + event.clientX - startX;
-            baseY = baseY + event.clientY - startY ;
+            // baseX = baseX + event.clientX - startX;  // 这两句话在使用range实现元素移动时没有作用
+            // baseY = baseY + event.clientY - startY ;
             document.removeEventListener("mousemove", move);
             document.removeEventListener("mouseup", end);
         }
