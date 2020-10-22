@@ -3,6 +3,7 @@
 <!-- 获取离 (x0, y0) 最近的文字range -->
 <!--初步实现了range来带动dragable移动 -->
 <!-- 在原来的基础上对代码稍微进行了简化 -->
+<!-- for(let i = 0; i < container.childNodes[0].textContent.length; i+=3)  -->
 
 <html>
     <div id="container">文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
@@ -58,7 +59,7 @@
 
     // *5 使用range获取container元素中所有文字 (单个文字) 的位置信息,push进ranges
     let ranges = [];
-    for(let i = 0; i < container.childNodes[0].textContent.length; i++) {
+    for(let i = 0; i < container.childNodes[0].textContent.length; i+=3) {
         let range = document.createRange();
         // 选择节点的位置：一个参照节点，一个节点偏移量
         range.setStart(container.childNodes[0], i);
