@@ -39,7 +39,7 @@
             // let x = baseX + event.clientX - startX, y = baseY + event.clientY - startY;
             // *8 mousemove时，获取和鼠标位置最接近的range, 把dragable元素插入到该range
             let range = nearest(event.clientX, event.clientY);
-            range.insertNode(drapable)
+            range.insertNode(drapable) // 默认会把页面上原来的dom移动，所以不需要删除
 
             // *7 transform是脱离了文档流的移动(脱离文档流)
             // document.getElementById("dragable").style.transform = `translate(${x}px, ${y}px)`
@@ -72,7 +72,7 @@
         let nearest = null;
         let distance = Infinity;
         for(let range of ranges) {
-            let rect = range.getClientRects()[0];
+            let rect = range.getClientRects()[0];  // 界面发生变化时，range.getClientRects()也会发生改变
             if(!rect) // 处理边际case, range.getClientRects()[0]可能不存在
                 continue;
             let {x , y} = rect; // 获取x, y
