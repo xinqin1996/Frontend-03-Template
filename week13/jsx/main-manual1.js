@@ -1,4 +1,5 @@
-/** 手动轮播，优化，只改变特定div的位置 */
+/** 手动轮播，改变所有的div的位置 */
+
 import { createElement, Component } from "./framework"
 
 /**  创建的Div class
@@ -55,30 +56,50 @@ class Carousel extends Component {
             let startX = event.clientX;
             let move = (event) => { 
                 let x = event.clientX - startX;
-                
-                let current = position - ((x - x % 471) / 471)// 计算当前在屏幕上的位置，可能左右便宜
-                for (let offset of [-1, 0, 1]) { 
-                    let pos = current + offset;
-                    pos = (pos + children.length) % children.length // 将可能的pos复数转化为正数
-                    children[pos].style.transition = 'none' // 鼠标移动时去掉transition
-                    children[pos].style.transform = `translateX(${ -pos * 471 + 471 * offset + x % 500}px)`
-                } 
+
+                // let current = position - Math.round(x / 471) // 计算当前在屏幕上的位置，可能左右便宜
+                for (let child of children) { 
+                    child.style.transition = 'none' // 鼠标移动时去掉transition
+                    child.style.transform = `translateX(${ -position * 471 + x }px)`
+                }
             }
             let up = (event) => { 
                 let x = event.clientX - startX;
                 position = position - Math.round(x / 471) // 鼠标移开时，计算回滚的位置 
-                for (let offset of [ 0, -Math.sign(Math.round(x / 500) - x + 250 * Math.sign(x))]) { 
-                    let pos = position + offset;
-                    pos = (pos + children.length) % children.length // 将可能的pos复数转化为正数
-                    children[pos].style.transition = '' // 鼠标移动时去掉transition
-                    children[pos].style.transform = `translateX(${ -pos * 471 + 471 * offset}px)`
-                } 
+                for (let child of children) { 
+                    child.style.transition = '' // 鼠标抬起时加上transition
+                    child.style.transform = `translateX(${ -position * 471 }px)`
+                }
                 document.removeEventListener("mousemove", move )
                 document.removeEventListener("mouseup", up )
             }
             document.addEventListener("mousemove", move)
             document.addEventListener("mouseup", up)            
-        })        
+        })
+
+
+        /** 初步完成移动轮播 */
+        // let currentIndex = 0;
+        // setInterval(() => { 
+        //     let children = this.root.children;
+        //     let nextIndex = (currentIndex + 1) % children.length;
+
+        //     let current = children[currentIndex]
+        //     let next = children[nextIndex]
+
+        //     next.style.transition = "none"; // 去掉transition，在移动
+        //     next.style.transform = `translateX(${100 - nextIndex * 100}%)`
+            
+        //     setTimeout(() => { // 下一帧，从新添加transition
+        //         next.style.transition = "";
+        //         current.style.transform = `translateX(${-100 - currentIndex * 100}%)`
+        //         next.style.transform = `translateX(${- nextIndex * 100}%)`
+
+        //         currentIndex = nextIndex
+        //     }, 16)
+        // }, 3000)
+        /** 初步完成移动轮播 */
+        
 
         return this.root
     }
@@ -95,5 +116,7 @@ let d = [
 
 let a = <Carousel src={d}/>
 
+
+// document.body.appendChild(a)
 
 a.mountTo(document.body) // 必须要重写这个方法， a可能是class实例
