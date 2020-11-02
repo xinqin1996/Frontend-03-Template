@@ -1,6 +1,6 @@
 import { createElement,Component } from "./framework"
 
-/**
+/**  创建的Div class
 // ------Div --------
 // 为 class创建constructor setAttribute 这些dom操作
 class Div {  
