@@ -1,10 +1,10 @@
 import { TimeLine, Animation } from "./animation"
+import { linear } from "./ease"
 
 // 创建时间线
 let t1 = new TimeLine();
 
-// object, property, startVal, endVal, duration, delay, timingFunction, template
-let animation = new Animation(document.querySelector("#el").style, "transform", 1, 500, 4000, 0, null, (v) => { return `translateX(${v}px)` })
+let animation = new Animation(document.querySelector("#el").style, "transform", 1, 500, 4000, 500, linear, (v) => { return `translateX(${v}px)` })
 
 // 启动时间线
 t1.start()
