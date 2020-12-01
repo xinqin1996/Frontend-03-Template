@@ -7,9 +7,32 @@
   <title>Document</title>
 </head>
 
-<body>
-  <script src="./gesture.js">
+<body contextmenu="event.preventDefault()" style="height: 100vh">
+  </script>
+  <script type="module">
+    import { enableGesture } from "./gesture封装-最终版.js";
+    // 为dom(document.documentElement)添加事件监听，当进行点击时，符合要求就会动态创建new Event("flick/pan/tap"),并由dom派发这个事件
+    enableGesture(document.documentElement)
+
+    // 事件派发后,触发domTwo(document.documentElement)绑定的""flick/pan/tap""监听事件，执行里面的函数
+    document.documentElement.addEventListener("tap", (e) => {
+      console.log(e)
+      console.log("tap, tap, tap")
+    });
   </script>
 </body>
+
+<!-- 
+const form = document.querySelector('form');
+const textarea = document.querySelector('textarea');
+
+1 元素可以侦听尚未创建的事件：
+form.addEventListener('awesome', e => console.log(e.detail.text()));
+
+textarea.addEventListener('input', function() {
+  2 动态创建和派发事件
+  this.dispatchEvent(new CustomEvent('awesome', { bubbles: true, detail: { text: () => textarea.value } }))
+}); -->
+
 
 </html>

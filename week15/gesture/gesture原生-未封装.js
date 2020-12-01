@@ -47,14 +47,14 @@ element.addEventListener("mousedown", event => {
     end(event, context)
     contexts.delete("mouse" + (1 << event.button))
     if (event.buttons === 0) {
-      element.removeEventListener("mousemove", mousemove)
-      element.removeEventListener("mouseup", mouseup)
+      document.removeEventListener("mousemove", mousemove)
+      document.removeEventListener("mouseup", mouseup)
       isListeningMouse = false;
     }
   }
   if (!isListeningMouse) {
-    element.addEventListener("mousemove", mousemove)
-    element.addEventListener("mouseup", mouseup)
+    document.addEventListener("mousemove", mousemove) // 将监听事件绑定在document上
+    document.addEventListener("mouseup", mouseup)
     isListeningMouse = true;
   }
 
@@ -104,6 +104,11 @@ element.addEventListener("touchcancel", event => {
 
 let start = (point, context) => {
   context.startX = point.clientX, startY = point.clientY;
+  context.points = [{
+    t: Date.now(),
+    x: point.clientX,
+    y: point.clientY,
+  }]
 
   context.isTap = true;
   context.isPan = false;
@@ -131,10 +136,17 @@ let move = (point, context) => {
   if (context.isPan) {
     console.log("pan")
   }
+  context.points = context.points.filter(item => Date.now() - item.t < 500)
+  context.points.push = {
+    t: Date.now(),
+    x: point.clientX,
+    y: point.clientY,
+  }
 }
 
 let end = (point, context) => {
   if (context.isTap) {
+    dispatch("tap", {})
     clearTimeout(context.handler)
     console.log("tap")
   }
@@ -143,6 +155,21 @@ let end = (point, context) => {
   }
   if (context.isPress) {
     console.log("Press")
+  }
+  context.points = context.points.filter(item => Date.now() - item.t < 500)
+  // 速度判断
+  let v, d;
+  if (context.points.length == 0) {
+    v = 0;
+  } else {
+    d = Math.sqrt((point.clientX - context.points[0].x) ** 2 + (point.clientY - context.points[0].y) ** 2)
+    v = d / (Date.now() - context.points[0].t) // 手指的点击到滑动结束可能不需要500ms
+  }
+  if (v > 1.5) { // 5.进入flick状态线
+    console.log("flick")
+    context.isFlick = true;
+  } else {
+    context.isFlick = false;
   }
 }
 
@@ -154,3 +181,11 @@ let cancel = (point, context) => { // 4.关闭所有状态线
 }
 
 
+/** 动态创建和派发事件 */
+function dispatch(type, properties) {
+  let event = new Event(type);
+  for (let name in properties) {
+    event[name] = properties[name]
+  }
+  element.dispatchEvent(event)
+}
